@@ -59,7 +59,7 @@ gulp.task('serve', () => {
 
 /*
  * Clean / Copy
- * `dest`内のクリーンナップ
+ * `htdocs`内のクリーンナップ
  */
 gulp.task('clean', del.bind(null, htdocs.root));
 gulp.task('copy', () => {
