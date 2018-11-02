@@ -53,7 +53,19 @@ gulp.task('serve', () => {
   browserSync.init({
     server: {
       baseDir: htdocs.root
-    }
+    },
+    callbacks: {
+      ready: (err, bs) => {
+        bs.addMiddleware('*', (req, res) => {
+          res.writeHead(302, {
+            location: '404.html'
+          });
+          res.end('Redirecting!');
+        });
+      }
+    },
+    ghostMode: false,
+    open: 'external'
   });
 });
 
