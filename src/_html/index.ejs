@@ -1,5 +1,5 @@
 <%_
-  const absolutePath = path.split(ejsRoot)[1];
+  const absolutePath = path.split(htmlRoot)[1];
   const depth = absolutePath.split('/').length - 1;
   const relativePath = (depth == 0) ? './':'../'.repeat(depth);
 
