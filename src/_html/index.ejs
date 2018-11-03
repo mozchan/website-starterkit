@@ -1,10 +1,4 @@
-<%_
-  const absolutePath = path.split(htmlRoot)[1];
-  const depth = absolutePath.split('/').length - 1;
-  const relativePath = (depth == 0) ? './':'../'.repeat(depth);
-
-  const pageID = 'top';
-_%>
+<%_ const pageID = 'top'; _%>
 <%- include(`${relativePath}_partials/_meta`, {id: pageID}) _%>
 <%- include(`${relativePath}_partials/_header`, {id: pageID}) _%>
 <main>

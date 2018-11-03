@@ -6,7 +6,7 @@ const browserSync = require('browser-sync').create();
 const del = require('del');
 const runSequence = require('run-sequence');
 
-// EJS
+// HTML
 const fs = require('fs');
 
 // 開発用ディレクトリ
@@ -31,14 +31,17 @@ gulp.task('html', () => {
 
   return gulp.src(src.html)
   .pipe($.data((file) => {
-    return {path: file.path}
+    const path = file.path;
+    const absolutePath = path.split(src.htmlRoot)[1].split('/').length - 1;
+    const relativePath = (absolutePath == 0) ? './' : '../'.repeat(absolutePath);
+
+    return {relativePath: relativePath}
   }))
-  .pipe($.plumber({errorHandler: $.notify.onError('Error: <%= error.message %>')}))
   .pipe($.ejs({
-    htmlRoot: `${src.htmlRoot}`,
     conf: confJson
-    },{},{ext: '.html'}
-  ))
+    },{},{
+      ext: '.html'
+    }).on('error', $.notify.onError('Something happend! <%= error.message %>')))
   .pipe($.prettify({
     'indent-inner-html': false
   }))
@@ -79,7 +82,7 @@ gulp.task('copy', () => {
     `${src.root}*`,
     `!${src.root}_**/`
   ], { base: src.root })
-    .pipe(gulp.dest(htdocs.root));
+  .pipe(gulp.dest(htdocs.root));
 });
 
 // gulp実行中に対象ファイルの変更を監視
