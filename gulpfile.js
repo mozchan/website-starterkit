@@ -5,6 +5,7 @@ const $ = require('gulp-load-plugins')();
 const browserSync = require('browser-sync').create();
 const del = require('del');
 const runSequence = require('run-sequence');
+const notifier = require('node-notifier');
 
 // HTML
 const fs = require('fs');
@@ -22,12 +23,23 @@ const htdocs = {
   root: 'htdocs/'
 }
 
+// 制御文字を使用してエラーログを赤文字で表示
+const colorError = (str) => `\u001b[31m${str}\u001b[0m`;
+
 /*
  * HTML
  * EJS 実行タスク
  */
 gulp.task('html', () => {
   const confJson = JSON.parse(fs.readFileSync(`${src.htmlRoot}_partials/conf.json`));
+  const onError = function(error) {
+    console.log(colorError(error.message));
+    notifier.notify({
+      title: 'Error!!! @EJS',
+      message: 'Look at the Console Log.'
+    });
+    this.emit('end');
+  }
 
   return gulp.src(src.html)
   .pipe($.data((file) => {
@@ -39,9 +51,9 @@ gulp.task('html', () => {
   }))
   .pipe($.ejs({
     conf: confJson
-    },{},{
-      ext: '.html'
-    }).on('error', $.notify.onError('Something happend! <%= error.message %>')))
+  },{},{
+    ext: '.html'
+  }).on('error', onError))
   .pipe($.prettify({
     'indent-inner-html': false
   }))
