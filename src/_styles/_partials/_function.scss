@@ -1,0 +1,6 @@
+// function
+
+// font-size（rem）
+@function rem($value, $defalt: 16) {
+  @return ($value / $defalt) * 1rem;
+}

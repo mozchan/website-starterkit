@@ -1,0 +1,56 @@
+// マウスオーバー
+@mixin hover {
+  &:hover {
+    @content;
+  }
+}
+
+@mixin hover-focus {
+  &:hover,
+  &:focus {
+    @content;
+  }
+}
+
+// ブレイクポイント
+@function map-has-breakpoints($key) {
+  $name: map-get($breakpoints, $key);
+  @return if($name != null, $name, null);
+}
+
+@mixin media-breakpoint-up($key) {
+  $min: map-has-breakpoints($key);
+
+  @if $min {
+    @media (min-width: $min) {
+      @content;
+    }
+  } @else {
+    @error '$breakpoints 内の $key を入力してください。';
+  }
+}
+
+@mixin media-breakpoint-down($key) {
+  $max: map-has-breakpoints($key);
+
+  @if $max {
+    @media (max-width: $max) {
+      @content;
+    }
+  } @else {
+    @error '$breakpoints 内の $key を入力してください。';
+  }
+}
+
+@mixin media-breakpoint-between($lower, $upper) {
+  $min: map-has-breakpoints($lower);
+  $max: map-has-breakpoints($upper);
+
+  @if $min != null and $max != null {
+    @media (min-width: $min) and (max-width: $max) {
+      @content;
+    }
+  } @else {
+    @error '$breakpoints 内の $key を入力してください。';
+  }
+}
