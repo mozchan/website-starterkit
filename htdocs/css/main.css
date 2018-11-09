@@ -311,7 +311,7 @@ template {
   display: none !important;
 }
 
-.sr-only {
+.u-sr-only {
   clip: rect(0, 0, 0, 0);
   position: absolute;
   width: 1px;
@@ -322,7 +322,7 @@ template {
   white-space: nowrap;
 }
 
-.sr-only.focusable:active, .sr-only.focusable:focus {
+.u-sr-only.focusable:active, .u-sr-only.focusable:focus {
   clip: auto;
   position: static;
   width: auto;
@@ -335,6 +335,18 @@ template {
   display: block;
   clear: both;
   content: '';
+}
+
+@media (max-width: 767px) {
+  .u-none-md {
+    display: none;
+  }
+}
+
+@media (max-width: 1079px) {
+  .u-none-lg {
+    display: none;
+  }
 }
 
 /*# sourceMappingURL=main.css.map */
