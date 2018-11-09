@@ -1,4 +1,13 @@
-.sr-only {
+@each $name, $value in $breakpoints {
+  @if $name == 'md' or $name == 'lg' {
+    .u-none-#{$name} {
+      @include media-breakpoint-down($name){
+        display: none;
+      }
+    }
+  }
+}
+.u-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
