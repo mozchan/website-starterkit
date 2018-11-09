@@ -74,20 +74,25 @@ gulp.task('html', () => {
 *
 */
 gulp.task('styles', () => {
-  const plugins = [
-    autoprefixer(),
-    cssDeclarationSorter({ order: 'smacss' }),
-    mqpacker()
-    // stylelint()
-  ];
+  const plugins = {
+    scss: [
+      stylelint()
+    ],
+    css: [
+      autoprefixer(),
+      cssDeclarationSorter({ order: 'smacss' }),
+      mqpacker()
+    ]
+  };
 
   return gulp.src(src.styles)
     .pipe($.sassGlob())
     .pipe($.sourcemaps.init())
+    // .pipe($.postcss(plugins.scss))
     .pipe($.sass({ outputStyle: 'expanded' }).on('error', function(error) {
       onError('styles', this, error);
     }))
-    .pipe($.postcss(plugins))
+    .pipe($.postcss(plugins.css))
     .pipe($.sourcemaps.write('./'))
     .pipe(gulp.dest(htdocs.styles));
 });
@@ -117,6 +122,14 @@ gulp.task('serve', () => {
 });
 
 /*
+ * Build
+ * 主要タスクの処理
+ */
+gulp.task('build', () => {
+  runSequence(['html', 'styles']);
+});
+
+/*
  * Clean / Copy
  * `htdocs`内のクリーンナップ
  */
@@ -129,19 +142,24 @@ gulp.task('copy', () => {
   .pipe(gulp.dest(htdocs.root));
 });
 
-// gulp実行中に対象ファイルの変更を監視
+/*
+ * Watch
+ * gulp実行中に対象ファイルの変更を監視
+ */
 gulp.task('watch', () => {
   gulp.watch(src.htmlWatch, ['html']);
   gulp.watch(src.styles, ['styles']);
 });
 
-// `gulp`実行時に発生
+/*
+ * Default
+ * gulp実行時に処理
+ */
 gulp.task('default', ['clean'], () => {
   runSequence(
     'copy',
-    'watch',
-    'html',
-    'styles',
-    'serve'
+    'build',
+    'serve',
+    'watch'
   );
 });
