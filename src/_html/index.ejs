@@ -1,5 +1,5 @@
 <%_ const pageID = 'top'; _%>
-<%- include(`${relativePath}_partials/_meta`, {id: pageID}) _%>
+<%- include(`${relativePath}_partials/_meta`, {id: pageID, stylesheet: ['top']}) _%>
 <%- include(`${relativePath}_partials/_header`, {id: pageID}) _%>
 <main>
   <p><%= conf[pageID].discription %></p>
