@@ -33,9 +33,9 @@ $link-hover-decoration: underline !default;
 $font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !default;
 
 // Images path
-$path: 'images/' !default;
-$path-common: 'images/common/' !default;
-$path-dummy: 'images/_dummy/' !default;
+$path: '/images/' !default;
+$path-common: '/images/common/' !default;
+$path-dummy: '/images/_dummy/' !default;
 
 // Contents width
 $contents-width: 1080px !default;

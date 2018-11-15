@@ -1,10 +1,8 @@
-@each $name, $value in $breakpoints {
-  @if $name == 'md' or $name == 'lg' {
-    .u-none-#{$name} {
-      @include media-breakpoint-down($name){
-        display: none;
-      }
-    }
+.clearfix {
+  &:after {
+    content: '';
+    display: block;
+    clear: both;
   }
 }
 .u-sr-only {
@@ -26,10 +24,12 @@
     white-space: normal;
   }
 }
-.clearfix {
-  &:after {
-    content: '';
-    display: block;
-    clear: both;
+@each $name, $value in $breakpoints {
+  @if $name == 'md' or $name == 'lg' {
+    .u-none-#{$name} {
+      @include media-breakpoint-down($name){
+        display: none;
+      }
+    }
   }
 }
