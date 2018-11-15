@@ -44,7 +44,7 @@
 
 @mixin media-breakpoint-between($lower, $upper) {
   $min: map-has-breakpoints($lower);
-  $max: map-has-breakpoints($upper) -1;
+  $max: map-has-breakpoints($upper) - 1;
 
   @if $min != null and $max != null {
     @media (min-width: $min) and (max-width: $max) {
