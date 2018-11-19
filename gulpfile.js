@@ -16,62 +16,72 @@ const cssDeclarationSorter = require('css-declaration-sorter');
 const mqpacker = require('css-mqpacker');
 const stylelint = require('stylelint');
 
+// rootディレクトリ
+const root = {
+  src: 'src/',
+  htdocs: 'htdocs/'
+}
+
 // 開発用ディレクトリ
 const src = {
-  root: 'src/',
-  htmlRoot: 'src/_html/',
-  html: ['src/_html/**/*.ejs', '!src/_html/**/_*.ejs'],
-  htmlWatch: 'src/_html/**/*.{ejs,json}',
-  styles: 'src/_styles/**/*.scss'
+  htmlRoot: `${root.src}_html/`,
+  html: [`${root.src}_html/**/*.ejs`, `!${root.src}_html/**/_*.ejs`],
+  htmlWatch: `${root.src}_html/**/*.{ejs,json}`,
+  styles: `${root.src}_styles/**/*.scss`,
+  scripts: `${root.src}_scripts/**/*.js`
 }
 
 // 本番用ディレクトリ
 const htdocs = {
-  root: 'htdocs/',
-  styles: 'htdocs/css/'
+  styles: `${root.htdocs}css/`,
+  scripts: `${root.htdocs}js/`
 }
 
-// 制御文字を使用してエラーログを赤文字で表示
-const colorError = (str) => `\u001b[31m${str}\u001b[0m`;
 
 // エラー関数
-function onError(task, self, error) {
-  console.log(colorError(error.message));
+function onError(task, self, err) {
+  // 制御文字を使用してエラーログを赤文字で表示
+  const colorError = (str) => `\u001b[31m${str}\u001b[0m`;
+
+  console.log(colorError(err.message));
   notifier.notify({
     title: `Error!!! @${task}`,
-    message: error.message
+    message: err.message
   });
   self.emit('end');
 }
 
 /*
  * HTML
- * EJS 実行タスク
+ * .ejs → .html に変換
  */
 gulp.task('html', () => {
   const confJson = JSON.parse(fs.readFileSync(`${src.htmlRoot}_partials/conf.json`));
+  const rootPathRegExp = new RegExp(root.htdocs);
 
   return gulp.src(src.html)
-  .pipe($.data((file) => {
-    const absolutePath = file.path.split(src.htmlRoot)[1].split('/').length - 1;
-    const relativePath = (absolutePath == 0) ? './' : '../'.repeat(absolutePath);
+    .pipe($.data((file) => {
+      const absolutePath = file.path.split(src.htmlRoot)[1].split('/').length - 1;
+      const relativePath = (absolutePath == 0) ? './' : '../'.repeat(absolutePath);
 
-    return {relativePath: relativePath}
-  }))
-  .pipe($.ejs({
-    conf: confJson
-  }, {}, { ext: '.html' }).on('error', function(error) {
-    onError('html', this, error);
-  }))
-  .pipe($.prettify({
-    'indent-inner-html': false
-  }))
-  .pipe(gulp.dest(htdocs.root));
+      return {relativePath: relativePath}
+    }))
+    .pipe($.ejs({
+      cssPath: htdocs.styles.replace(rootPathRegExp, '/'),
+      jsPath: htdocs.scripts.replace(rootPathRegExp, '/'),
+      conf: confJson
+    }, {}, { ext: '.html' }).on('error', function(err) {
+      onError('html', this, err);
+    }))
+    .pipe($.prettify({
+      'indent-inner-html': false
+    }))
+    .pipe(gulp.dest(root.htdocs));
 });
 
 /*
 * Styles
-*
+* .scss → .css に変換
 */
 gulp.task('styles', () => {
   const plugins = {
@@ -98,26 +108,29 @@ gulp.task('styles', () => {
 });
 
 /*
+* Scripts
+* ES2015+ → ES5 に変換
+*/
+gulp.task('scripts', () => {
+  return gulp.src(src.scripts)
+    .pipe($.sourcemaps.init())
+    .pipe($.babel())
+    .pipe($.sourcemaps.write('.'))
+    .pipe(gulp.dest(htdocs.scripts));
+});
+
+/*
 * Browsersync
 * ローカルサーバーを起動 / ライブリロードは未使用
 */
 gulp.task('serve', () => {
   browserSync.init({
     server: {
-      baseDir: htdocs.root
-    },
-    callbacks: {
-      ready: (err, bs) => {
-        bs.addMiddleware('*', (req, res) => {
-          res.writeHead(302, {
-            location: '404.html'
-          });
-          res.end('Redirecting!');
-        });
-      }
+      baseDir: root.htdocs
     },
     ghostMode: false,
-    open: 'external'
+    open: 'external',
+    notify: false
   });
 });
 
@@ -126,40 +139,40 @@ gulp.task('serve', () => {
  * 主要タスクの処理
  */
 gulp.task('build', () => {
-  runSequence(['html', 'styles']);
+  runSequence(['html', 'styles', 'scripts']);
+});
+
+/*
+* Watch
+* gulp実行中に対象ファイルの変更を監視
+*/
+gulp.task('watch', ['build'], () => {
+  gulp.watch(src.htmlWatch, ['html']);
+  gulp.watch(src.styles, ['styles']);
+  gulp.watch(src.scripts, ['scripts']);
 });
 
 /*
  * Clean / Copy
  * `htdocs`内のクリーンナップ
  */
-gulp.task('clean', del.bind(null, htdocs.root));
+gulp.task('clean', del.bind(null, root.htdocs));
 gulp.task('copy', () => {
   return gulp.src([
-    `${src.root}*`,
-    `!${src.root}_**/`
-  ], { base: src.root })
-  .pipe(gulp.dest(htdocs.root));
+    `${root.src}*/`,
+    `!${root.src}_**/`
+  ], { base: root.src })
+  .pipe(gulp.dest(root.htdocs));
 });
 
 /*
- * Watch
- * gulp実行中に対象ファイルの変更を監視
- */
-gulp.task('watch', () => {
-  gulp.watch(src.htmlWatch, ['html']);
-  gulp.watch(src.styles, ['styles']);
-});
-
-/*
- * Default
- * gulp実行時に処理
+* Default
+ * gulp実行時の処理
  */
 gulp.task('default', ['clean'], () => {
   runSequence(
     'copy',
-    'build',
-    'serve',
-    'watch'
+    'watch',
+    'serve'
   );
 });
