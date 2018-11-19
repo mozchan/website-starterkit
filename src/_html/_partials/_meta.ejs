@@ -9,9 +9,9 @@
   <meta name="format-detection" content="telephone=no">
   <link rel="canonical" href="<%= conf.siteURL%>">
 
-  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="<%= cssPath %>main.css">
   <%_ for(let item of stylesheet) { _%>
-  <link rel="stylesheet" href="/css/<%= item %>.css">
+  <link rel="stylesheet" href="<%= cssPath %><%= item %>.css">
   <%_ } _%>
 </head>
 <body>
