@@ -9,6 +9,7 @@ const notifier = require('node-notifier');
 
 // HTML
 const fs = require('fs');
+const htmlHintrc = 'htmlhintrc'
 
 // Styles
 const autoprefixer = require('autoprefixer');
@@ -33,10 +34,10 @@ const src = {
 
 // 本番用ディレクトリ
 const htdocs = {
+  html: `${root.htdocs}**/*.html`,
   styles: `${root.htdocs}css/`,
   scripts: `${root.htdocs}js/`
 }
-
 
 // エラー関数
 function onError(task, self, err) {
@@ -77,6 +78,16 @@ gulp.task('html', () => {
       'indent-inner-html': false
     }))
     .pipe(gulp.dest(root.htdocs));
+});
+
+/*
+* HTML hint
+* 構文チェックを実施
+*/
+gulp.task('htmlhint', () => {
+  return gulp.src(htdocs.html)
+    .pipe($.htmlhint(htmlHintrc))
+    .pipe($.htmlhint.reporter())
 });
 
 /*
