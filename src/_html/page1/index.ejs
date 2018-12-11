@@ -2,7 +2,7 @@
 const pageID = 'page1';
 const breadcrumbList = ['top', pageID];
 _%>
-<%- include(`${relativePath}_partials/_meta`, {id: pageID, stylesheet: [pageID], breadcrumbList: breadcrumbList}) _%>
+<%- include(`${relativePath}_partials/_meta`, {id: pageID, stylesheet: [pageID]}) _%>
 <%- include(`${relativePath}_partials/_global_header`, {id: pageID}) _%>
 <%- include(`${relativePath}_partials/_global_nav`, {id: pageID}) _%>
 <%- include(`${relativePath}_partials/_breadcrumb`, {breadcrumbList: breadcrumbList}) _%>
@@ -11,5 +11,6 @@ _%>
 </main>
 <%- include(`${relativePath}_partials/_global_footer`) _%>
 <%- include(`${relativePath}_partials/_scripts`, {script: [pageID]}) _%>
+<%- include(`${relativePath}_partials/_json_ld`, {breadcrumbList: breadcrumbList}) _%>
 </body>
 </html>

@@ -13,25 +13,5 @@
   <%_ for(let item of stylesheet) { _%>
   <link rel="stylesheet" href="<%= cssPath %><%= item %>.css">
   <%_ } _%>
-  <% if (breadcrumbList != 'undefined') { %>
-    <script type="application/ld+json">
-    [{
-      "@context": "http://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement":[
-        <% breadcrumbList.forEach((item, i) => { %>
-          {
-            "@type": "ListItem",
-            "position": <%- ++i %>,
-            "item":{
-              "@id": "<%- conf.siteURL %><%- pageList[item].url %>",
-              "name": "<%- pageList[item].title %>"
-            }
-          }<% if(breadcrumbList.length === ++i) { %>,<% } %>
-        <% });%>
-      ]
-    }]
-    </script>
-  <% } %>
 </head>
 <body>
