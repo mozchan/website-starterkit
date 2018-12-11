@@ -1,0 +1,17 @@
+{
+  "top": {
+    "title": "Top page",
+    "discription": "Top pageの説明文が入ります。",
+    "url": "/"
+  },
+  "page1": {
+    "title": "PAGE 1",
+    "discription": "PAGE 1の説明文が入ります。",
+    "url": "/page1/"
+  },
+  "page2": {
+    "title": "PAGE 2",
+    "discription": "PAGE 2の説明文が入ります。",
+    "url": "/page2/"
+  }
+}

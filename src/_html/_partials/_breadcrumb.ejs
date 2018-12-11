@@ -1,0 +1,16 @@
+<nav aria-label="Breadcrumb" class="breadcrumb">
+  <h2>パンくずリスト</h2>
+  <ol>
+    <%
+    breadcrumbList.forEach((item, i) => {
+      if(breadcrumbList.length === ++i) {
+    %>
+      <li aria-current="page"><%= pageList[item].title %></li>
+    <% } else { %>
+      <li><a href="<%- pageList[item].url %>"><%= pageList[item].title %></a></li>
+    <%
+      }
+    });
+    %>
+  </ol>
+</nav>

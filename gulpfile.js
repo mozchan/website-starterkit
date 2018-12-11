@@ -58,6 +58,7 @@ function onError(task, self, err) {
  */
 gulp.task('html', () => {
   const confJson = JSON.parse(fs.readFileSync(`${src.htmlRoot}_partials/conf.json`));
+  const pageListJson = JSON.parse(fs.readFileSync(`${src.htmlRoot}_partials/page_list.json`));
   const rootPathRegExp = new RegExp(root.htdocs);
 
   return gulp.src(src.html)
@@ -70,7 +71,8 @@ gulp.task('html', () => {
     .pipe($.ejs({
       cssPath: htdocs.styles.replace(rootPathRegExp, '/'),
       jsPath: htdocs.scripts.replace(rootPathRegExp, '/'),
-      conf: confJson
+      conf: confJson,
+      pageList: pageListJson,
     }, {}, { ext: '.html' }).on('error', function(err) {
       onError('html', this, err);
     }))

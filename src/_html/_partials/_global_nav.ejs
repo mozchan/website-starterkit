@@ -1,0 +1,18 @@
+<nav class="glovalNav">
+  <h2>グロナビ</h2>
+  <ol>
+    <%
+    const pages = Object.keys(pageList);
+
+    for(item of pages) {
+      if(item == id) {
+    %>
+    <li aria-current="page" ><%= pageList[item].title %></li>
+    <% } else { %>
+    <li><a href="<%- pageList[item].url %>"><%= pageList[item].title %></a></li>
+    <%
+      }
+    }
+    %>
+  </ol>
+</nav>

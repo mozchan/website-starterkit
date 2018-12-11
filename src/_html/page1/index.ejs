@@ -1,10 +1,11 @@
 <%_
-const pageID = 'top';
-const breadcrumbList = 'undefined';
+const pageID = 'page1';
+const breadcrumbList = ['top', pageID];
 _%>
 <%- include(`${relativePath}_partials/_meta`, {id: pageID, stylesheet: [pageID], breadcrumbList: breadcrumbList}) _%>
 <%- include(`${relativePath}_partials/_global_header`, {id: pageID}) _%>
 <%- include(`${relativePath}_partials/_global_nav`, {id: pageID}) _%>
+<%- include(`${relativePath}_partials/_breadcrumb`, {breadcrumbList: breadcrumbList}) _%>
 <main>
   <p><%= pageList[pageID].discription %></p>
 </main>

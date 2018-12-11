@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title><%= conf[id].title %></title>
-  <meta name="description" content="<%= conf[id].discription %>">
+  <title><%= pageList[id].title %></title>
+  <meta name="description" content="<%= pageList[id].discription %>">
   <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1">
   <meta name="format-detection" content="telephone=no">
   <link rel="canonical" href="<%= conf.siteURL%>">
@@ -13,5 +13,25 @@
   <%_ for(let item of stylesheet) { _%>
   <link rel="stylesheet" href="<%= cssPath %><%= item %>.css">
   <%_ } _%>
+  <% if (breadcrumbList != 'undefined') { %>
+    <script type="application/ld+json">
+    [{
+      "@context": "http://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement":[
+        <% breadcrumbList.forEach((item, i) => { %>
+          {
+            "@type": "ListItem",
+            "position": <%- ++i %>,
+            "item":{
+              "@id": "<%- conf.siteURL %><%- pageList[item].url %>",
+              "name": "<%- pageList[item].title %>"
+            }
+          }<% if(breadcrumbList.length === ++i) { %>,<% } %>
+        <% });%>
+      ]
+    }]
+    </script>
+  <% } %>
 </head>
 <body>
