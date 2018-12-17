@@ -152,6 +152,7 @@ function serve(done) {
 function copy() {
   return gulp.src([
     `${root.src}*`,
+    `!${root.src}_**`,
     `!${root.src}_**/`
   ])
   .pipe(gulp.dest(root.htdocs));
