@@ -1,20 +1,17 @@
 'use strict';
 
-const gulp = require('gulp');
-const $ = require('gulp-load-plugins')();
-const browserSync = require('browser-sync').create();
-const del = require('del');
-const notifier = require('node-notifier');
-
-// HTML
-const fs = require('fs');
-const htmlHintrc = 'htmlhintrc'
-
-// Styles
-const autoprefixer = require('autoprefixer');
-const cssDeclarationSorter = require('css-declaration-sorter');
-const mqpacker = require('css-mqpacker');
-const stylelint = require('stylelint');
+import gulp from 'gulp';
+import gulpLoadPlugins from 'gulp-load-plugins';
+const $ = gulpLoadPlugins();
+import { create as bsCreate } from 'browser-sync';
+const browserSync = bsCreate();
+import del from 'del';
+import notifier from 'node-notifier';
+import fs from 'fs';
+import autoprefixer from 'autoprefixer';
+import cssDeclarationSorter from 'css-declaration-sorter';
+import mqpacker from 'css-mqpacker';
+import stylelint from 'stylelint';
 
 // rootディレクトリ
 const root = {
@@ -53,11 +50,16 @@ function onError(task, self, err) {
   self.emit('end');
 }
 
+// Node.js 環境変数に開発モードを追加
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
+const isSourcemaps = process.env.NODE_ENV === 'development' ? true : false;
+
 /*
  * HTML
  * .ejs → .html に変換
  */
-function html() {
+export function html() {
   const confJson = JSON.parse(fs.readFileSync(`${src.htmlRoot}_partials/conf.json`));
   const pageListJson = JSON.parse(fs.readFileSync(`${src.htmlRoot}_partials/page_list.json`));
   const rootPathRegExp = new RegExp(root.htdocs);
@@ -86,9 +88,9 @@ function html() {
  * HTML hint
  * 構文チェックを実施
  */
-function htmlhint() {
+export function htmlhint() {
   return gulp.src(htdocs.html)
-    .pipe($.htmlhint(htmlhintrc))
+    .pipe($.htmlhint('.htmlhintrc'))
     .pipe($.htmlhint.reporter())
 }
 
@@ -96,7 +98,7 @@ function htmlhint() {
  * Styles
  * .scss → .css に変換
  */
-function styles() {
+export function styles() {
   const plugins = {
     scss: [
       stylelint()
@@ -108,31 +110,31 @@ function styles() {
     ]
   };
 
-  return gulp.src(src.styles, { sourcemaps: true })
+  return gulp.src(src.styles, { sourcemaps: isSourcemaps })
     .pipe($.sassGlob())
     // .pipe($.postcss(plugins.scss))
     .pipe($.sass({ outputStyle: 'expanded' }).on('error', function(error) {
       onError('styles', this, error);
     }))
     .pipe($.postcss(plugins.css))
-    .pipe(gulp.dest(htdocs.styles, { sourcemaps: true }));
+    .pipe(gulp.dest(htdocs.styles, { sourcemaps: isSourcemaps }));
 }
 
 /*
  * Scripts
  * ES2015+ → ES5 に変換
  */
-function scripts() {
-  return gulp.src(src.scripts, { sourcemaps: true })
+export function scripts() {
+  return gulp.src(src.scripts, { sourcemaps: isSourcemaps })
     .pipe($.babel())
-    .pipe(gulp.dest(htdocs.scripts, { sourcemaps: true }));
+    .pipe(gulp.dest(htdocs.scripts, { sourcemaps: isSourcemaps }));
 }
 
 /*
  * Browsersync
  * ローカルサーバーを起動 / ライブリロードは未使用
  */
-function serve(done) {
+export function serve(done) {
   browserSync.init({
     server: {
       baseDir: root.htdocs
@@ -149,7 +151,7 @@ function serve(done) {
  * Copy
  * gulp監視下にないファイルの移動
  */
-function copy() {
+export function copy() {
   return gulp.src([
     `${root.src}*`,
     `!${root.src}_**`,
@@ -193,11 +195,11 @@ const build = gulp.series(
   serve,
   gulp.parallel(
     html,
-    // htmlhint,
+    // htmlHint,
     styles,
     scripts
   ),
   watch
 );
 
-exports.default = build;
+export default build;
