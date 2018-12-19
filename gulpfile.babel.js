@@ -50,7 +50,7 @@ function onError(task, self, err) {
   self.emit('end');
 }
 
-// Node.js 環境変数に開発モードを追加
+// 環境変数に開発モードを追加
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 const isSourcemaps = process.env.NODE_ENV === 'development' ? true : false;
@@ -131,23 +131,6 @@ export function scripts() {
 }
 
 /*
- * Browsersync
- * ローカルサーバーを起動 / ライブリロードは未使用
- */
-export function serve(done) {
-  browserSync.init({
-    server: {
-      baseDir: root.htdocs
-    },
-    ghostMode: false,
-    open: 'external',
-    notify: false
-  });
-
-  done();
-}
-
-/*
  * Copy
  * gulp監視下にないファイルの移動
  */
@@ -187,19 +170,38 @@ function watch(done) {
 }
 
 /*
+ * Browsersync
+ * ローカルサーバーを起動 / ライブリロードは未使用
+ */
+export function browsersync(done) {
+  browserSync.init({
+    server: {
+      baseDir: root.htdocs
+    },
+    ghostMode: false,
+    open: 'external',
+    notify: false
+  });
+
+  done();
+}
+
+/*
  * Default
  * gulp実行時の処理
  */
 const build = gulp.series(
   copy,
-  serve,
   gulp.parallel(
     html,
-    // htmlHint,
     styles,
     scripts
-  ),
-  watch
+  )
 );
 
-export default build;
+if(process.env.NODE_ENV === 'production') {
+  exports.default = build;
+} else {
+  exports.default = gulp.series(build, watch);
+}
+export const serve = gulp.series(build, watch, browsersync);
