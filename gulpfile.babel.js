@@ -12,76 +12,76 @@ import autoprefixer from 'autoprefixer';
 import cssDeclarationSorter from 'css-declaration-sorter';
 import mqpacker from 'css-mqpacker';
 import stylelint from 'stylelint';
-
-// rootディレクトリ
-const root = {
+const baseDir = {
   src: 'src/',
   htdocs: 'htdocs/'
 }
-
-// 開発用ディレクトリ
-const src = {
-  htmlRoot: `${root.src}_html/`,
-  html: [`${root.src}_html/**/*.ejs`, `!${root.src}_html/**/_*.ejs`],
-  htmlWatch: `${root.src}_html/**/*.{ejs,json}`,
-  stylesRoot: `${root.src}_styles/`,
-  styles: `${root.src}_styles/**/*.scss`,
-  scriptsRoot: `${root.src}_scripts/`,
-  scripts: `${root.src}_scripts/**/*.js`
+const paths = {
+  src: {
+    htmlRoot: `${baseDir.src}_html/`,
+    html: [`${baseDir.src}_html/**/*.ejs`, `!${baseDir.src}_html/**/_*.ejs`],
+    htmlWatch: `${baseDir.src}_html/**/*.{ejs,json}`,
+    stylesRoot: `${baseDir.src}_styles/`,
+    styles: `${baseDir.src}_styles/**/*.scss`,
+    scriptsRoot: `${baseDir.src}_scripts/`,
+    scripts: `${baseDir.src}_scripts/**/*.js`
+  },
+  htdocs: {
+    html: `${baseDir.htdocs}**/*.html`,
+    styles: `${baseDir.htdocs}css/`,
+    scripts: `${baseDir.htdocs}js/`
+  }
 }
 
-// 本番用ディレクトリ
-const htdocs = {
-  html: `${root.htdocs}**/*.html`,
-  styles: `${root.htdocs}css/`,
-  scripts: `${root.htdocs}js/`
-}
-
-// エラー関数
-function onError(task, self, err) {
-  // 制御文字を使用してエラーログを赤文字で表示
-  const colorError = (str) => `\u001b[31m${str}\u001b[0m`;
-
-  console.log(colorError(err.message));
-  notifier.notify({
-    title: `Error!!! @${task}`,
-    message: err.message
-  });
-  self.emit('end');
-}
-
-// 環境変数に開発モードを追加
+// 開発モードによるAPIの制御
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-
 const isSourcemaps = process.env.NODE_ENV === 'development' ? true : false;
+
+// 表示するエラーメッセージの制御
+const colorError = (str) => `\u001b[31m${str}\u001b[0m`;
+function errorMessage(error) {
+  return colorError(error.message.split(__dirname)[1]);
+}
+
+// デスクトップ通知の設定
+const isNotify = true; // デスクトップ通知しない場合は、`false` に変更する
+
+function notify(error) {
+  notifier.notify({
+    title: `Error!!! @${error.plugin}`,
+    message: errorMessage(error).split('\n')[0]
+  });
+}
+
 
 /*
  * HTML
  * .ejs → .html に変換
  */
 export function html() {
-  const confJson = JSON.parse(fs.readFileSync(`${src.htmlRoot}_partials/conf.json`));
-  const pageListJson = JSON.parse(fs.readFileSync(`${src.htmlRoot}_partials/page_list.json`));
-  const rootPathRegExp = new RegExp(root.htdocs);
+  const confJson = JSON.parse(fs.readFileSync(`${paths.src.htmlRoot}_partials/conf.json`));
+  const pageListJson = JSON.parse(fs.readFileSync(`${paths.src.htmlRoot}_partials/page_list.json`));
 
-  return gulp.src(src.html)
+  return gulp.src(paths.src.html)
     .pipe($.data((file) => {
-      const absolutePath = file.path.split(src.htmlRoot)[1].split('/').length - 1;
+      const absolutePath = file.path.split(paths.src.htmlRoot)[1].split('/').length - 1;
       const relativePath = (absolutePath == 0) ? './' : '../'.repeat(absolutePath);
-      return {relativePath: relativePath}
+      return { relativePath: relativePath }
     }))
     .pipe($.ejs({
-      cssPath: htdocs.styles.replace(rootPathRegExp, '/'),
-      jsPath: htdocs.scripts.replace(rootPathRegExp, '/'),
+      cssPath: paths.htdocs.styles.replace(baseDir.htdocs, '/'),
+      jsPath: paths.htdocs.scripts.replace(baseDir.htdocs, '/'),
       conf: confJson,
       pageList: pageListJson
-    }, {}, { ext: '.html' }).on('error', function(err) {
-      onError('html', this, err);
+    }, {}, { ext: '.html' }).on('error', function(error) {
+      console.log(errorMessage(error));
+      if(isNotify) notify(error);
+      this.emit('end');
     }))
     .pipe($.prettify({
       'indent-inner-html': false
     }))
-    .pipe(gulp.dest(root.htdocs));
+    .pipe(gulp.dest(baseDir.htdocs));
 }
 
 /*
@@ -89,7 +89,7 @@ export function html() {
  * 構文チェックを実施
  */
 export function htmlhint() {
-  return gulp.src(htdocs.html)
+  return gulp.src(paths.htdocs.html)
     .pipe($.htmlhint('.htmlhintrc'))
     .pipe($.htmlhint.reporter())
 }
@@ -110,14 +110,14 @@ export function styles() {
     ]
   };
 
-  return gulp.src(src.styles, { sourcemaps: isSourcemaps })
+  return gulp.src(paths.src.styles, { sourcemaps: isSourcemaps })
     .pipe($.sassGlob())
     // .pipe($.postcss(plugins.scss))
     .pipe($.sass({ outputStyle: 'expanded' }).on('error', function(error) {
       onError('styles', this, error);
     }))
     .pipe($.postcss(plugins.css))
-    .pipe(gulp.dest(htdocs.styles, { sourcemaps: isSourcemaps }));
+    .pipe(gulp.dest(paths.htdocs.styles, { sourcemaps: isSourcemaps }));
 }
 
 /*
@@ -125,9 +125,9 @@ export function styles() {
  * ES2015+ → ES5 に変換
  */
 export function scripts() {
-  return gulp.src(src.scripts, { sourcemaps: isSourcemaps })
+  return gulp.src(paths.src.scripts, { sourcemaps: isSourcemaps })
     .pipe($.babel())
-    .pipe(gulp.dest(htdocs.scripts, { sourcemaps: isSourcemaps }));
+    .pipe(gulp.dest(paths.htdocs.scripts, { sourcemaps: isSourcemaps }));
 }
 
 /*
@@ -136,11 +136,11 @@ export function scripts() {
  */
 export function copy() {
   return gulp.src([
-    `${root.src}*`,
-    `!${root.src}_**`,
-    `!${root.src}_**/`
+    `${baseDir.src}*`,
+    `!${baseDir.src}_**`,
+    `!${baseDir.src}_**/`
   ])
-  .pipe(gulp.dest(root.htdocs));
+  .pipe(gulp.dest(baseDir.htdocs));
 }
 
 /*
@@ -148,22 +148,22 @@ export function copy() {
  * gulp実行中の監視
  */
 function watch(done) {
-  const watcher = gulp.watch([src.htmlRoot, src.stylesRoot, src.scriptsRoot]);
+  const watcher = gulp.watch([paths.src.htmlRoot, paths.src.stylesRoot, paths.src.scriptsRoot]);
 
-  gulp.watch(src.htmlWatch, html);
-  gulp.watch(src.styles, styles);
-  gulp.watch(src.scripts, scripts);
+  gulp.watch(paths.src.htmlWatch, html);
+  gulp.watch(paths.src.styles, styles);
+  gulp.watch(paths.src.scripts, scripts);
 
   watcher.on('unlink', (path) => {
-    del(path.replace(src.htmlRoot, root.htdocs).replace('.ejs', '.html'));
-    del(path.replace(src.stylesRoot, htdocs.styles).replace('.scss', '.css'));
-    del(path.replace(src.scriptsRoot, htdocs.scripts));
+    del(path.replace(paths.src.htmlRoot, baseDir.htdocs).replace('.ejs', '.html'));
+    del(path.replace(paths.src.stylesRoot, paths.htdocs.styles).replace('.scss', '.css'));
+    del(path.replace(paths.src.scriptsRoot, paths.htdocs.scripts));
   });
 
   watcher.on('unlinkDir', (path) => {
-    del(path.replace(src.htmlRoot, root.htdocs));
-    del(path.replace(src.stylesRoot, htdocs.styles));
-    del(path.replace(src.scriptsRoot, htdocs.scripts));
+    del(path.replace(paths.src.htmlRoot, baseDir.htdocs));
+    del(path.replace(paths.src.stylesRoot, paths.htdocs.styles));
+    del(path.replace(paths.src.scriptsRoot, paths.htdocs.scripts));
   });
 
   done();
@@ -176,7 +176,7 @@ function watch(done) {
 export function browsersync(done) {
   browserSync.init({
     server: {
-      baseDir: root.htdocs
+      baseDir: baseDir.htdocs
     },
     ghostMode: false,
     open: 'external',
