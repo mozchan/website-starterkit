@@ -10,7 +10,7 @@
   },
   "repository": "https://github.com/mozchan/website-starterkit.git",
   "author": "mozchan <29094089+mozchan@users.noreply.github.com>",
-  "license": "MIT",
+  "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.1.5",
     "@babel/preset-env": "^7.1.5",
