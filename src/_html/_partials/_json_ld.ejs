@@ -1,0 +1,20 @@
+<%_ if (breadcrumbList != 'undefined') { _%>
+  <script type="application/ld+json">
+  [{
+    "@context": "http://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement":[
+      <%_ breadcrumbList.forEach((item, i) => { _%>
+        {
+          "@type": "ListItem",
+          "position": <%- ++i %>,
+          "item":{
+            "@id": "<%- conf.siteURL %><%- pageList[item].url %>",
+            "name": "<%- pageList[item].title %>"
+          }
+        }<%_ if(breadcrumbList.length === ++i) { _%>,<%_ } _%>
+      <%_ }); _%>
+    ]
+  }]
+  </script>
+<%_ } _%>
