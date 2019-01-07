@@ -12,24 +12,23 @@ import autoprefixer from 'autoprefixer';
 import cssDeclarationSorter from 'css-declaration-sorter';
 import mqpacker from 'css-mqpacker';
 import stylelint from 'stylelint';
+import webpack from 'webpack-stream';
+import glob from 'glob';
 const baseDir = {
   src: 'src/',
-  htdocs: 'htdocs/'
+  dest: 'htdocs/'
 }
 const paths = {
-  src: {
-    htmlRoot: `${baseDir.src}_html/`,
-    html: [`${baseDir.src}_html/**/*.ejs`, `!${baseDir.src}_html/**/_*.ejs`],
-    htmlWatch: `${baseDir.src}_html/**/*.{ejs,json}`,
-    stylesRoot: `${baseDir.src}_styles/`,
-    styles: `${baseDir.src}_styles/**/*.scss`,
-    scriptsRoot: `${baseDir.src}_scripts/`,
-    scripts: `${baseDir.src}_scripts/**/*.js`
+  html: {
+    src: `${baseDir.src}_html/`
   },
-  htdocs: {
-    html: `${baseDir.htdocs}**/*.html`,
-    styles: `${baseDir.htdocs}css/`,
-    scripts: `${baseDir.htdocs}js/`
+  styles: {
+    src: `${baseDir.src}_styles/`,
+    dest: `${baseDir.dest}css/`
+  },
+  scripts: {
+    src: `${baseDir.src}_scripts/`,
+    dest: `${baseDir.dest}js/`
   }
 }
 
@@ -59,18 +58,18 @@ function notify(error) {
  * .ejs → .html に変換
  */
 export function html() {
-  const confJson = JSON.parse(fs.readFileSync(`${paths.src.htmlRoot}_partials/conf.json`));
-  const pageListJson = JSON.parse(fs.readFileSync(`${paths.src.htmlRoot}_partials/page_list.json`));
+  const confJson = JSON.parse(fs.readFileSync(`${paths.html.src}_partials/conf.json`));
+  const pageListJson = JSON.parse(fs.readFileSync(`${paths.html.src}_partials/page_list.json`));
 
-  return gulp.src(paths.src.html)
+  return gulp.src([`${paths.html.src}**/*.ejs`, `!${paths.html.src}**/_*.ejs`])
     .pipe($.data((file) => {
-      const absolutePath = file.path.split(paths.src.htmlRoot)[1].split('/').length - 1;
+      const absolutePath = file.path.split(paths.html.src)[1].split('/').length - 1;
       const relativePath = (absolutePath == 0) ? './' : '../'.repeat(absolutePath);
       return { relativePath: relativePath }
     }))
     .pipe($.ejs({
-      cssPath: paths.htdocs.styles.replace(baseDir.htdocs, '/'),
-      jsPath: paths.htdocs.scripts.replace(baseDir.htdocs, '/'),
+      cssPath: paths.styles.dest.replace(baseDir.dest, '/'),
+      jsPath: paths.scripts.dest.replace(baseDir.dest, '/'),
       conf: confJson,
       pageList: pageListJson
     }, {}, { ext: '.html' }).on('error', function(error) {
@@ -81,7 +80,7 @@ export function html() {
     .pipe($.prettify({
       'indent-inner-html': false
     }))
-    .pipe(gulp.dest(baseDir.htdocs));
+    .pipe(gulp.dest(baseDir.dest));
 }
 
 /*
@@ -89,7 +88,7 @@ export function html() {
  * 構文チェックを実施
  */
 export function htmlhint() {
-  return gulp.src(paths.htdocs.html)
+  return gulp.src(`${baseDir.dest}**/*.html`)
     .pipe($.htmlhint('.htmlhintrc'))
     .pipe($.htmlhint.reporter())
 }
@@ -110,14 +109,14 @@ export function styles() {
     ]
   };
 
-  return gulp.src(paths.src.styles, { sourcemaps: isSourcemaps })
+  return gulp.src(`${paths.styles.src}**/*.scss`, { sourcemaps: isSourcemaps })
     .pipe($.sassGlob())
     // .pipe($.postcss(plugins.scss))
     .pipe($.sass({ outputStyle: 'expanded' }).on('error', function(error) {
       onError('styles', this, error);
     }))
     .pipe($.postcss(plugins.css))
-    .pipe(gulp.dest(paths.htdocs.styles, { sourcemaps: isSourcemaps }));
+    .pipe(gulp.dest(paths.styles.dest, { sourcemaps: isSourcemaps }));
 }
 
 /*
@@ -125,9 +124,31 @@ export function styles() {
  * ES2015+ → ES5 に変換
  */
 export function scripts() {
-  return gulp.src(paths.src.scripts, { sourcemaps: isSourcemaps })
-    .pipe($.babel())
-    .pipe(gulp.dest(paths.htdocs.scripts, { sourcemaps: isSourcemaps }));
+  const entries = {}
+
+  glob.sync(`./${paths.scripts.src}**/*.js`, {
+    ignore: `./${paths.scripts.src}**/_*.js`
+  }).map(function (file) {
+    const key = file.replace(paths.scripts.src, '');
+    entries[key] = file;
+  });
+
+  return gulp.src(`${paths.scripts.src}**/*.js`)
+    .pipe(webpack({
+      entry: entries,
+      output: { filename: '[name]' },
+      mode: process.env.NODE_ENV,
+      module: {
+        rules: [{
+          test: /\.js$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader'
+          }
+        }]
+      }
+    }), null, function(err, stats) {})
+    .pipe(gulp.dest(paths.scripts.dest));
 }
 
 /*
@@ -140,7 +161,7 @@ export function copy() {
     `!${baseDir.src}_**`,
     `!${baseDir.src}_**/`
   ])
-  .pipe(gulp.dest(baseDir.htdocs));
+  .pipe(gulp.dest(baseDir.dest));
 }
 
 /*
@@ -148,22 +169,22 @@ export function copy() {
  * gulp実行中の監視
  */
 function watch(done) {
-  const watcher = gulp.watch([paths.src.htmlRoot, paths.src.stylesRoot, paths.src.scriptsRoot]);
+  const watchDir = gulp.watch([paths.html.src, paths.styles.src, paths.scripts.src]);
 
-  gulp.watch(paths.src.htmlWatch, html);
-  gulp.watch(paths.src.styles, styles);
-  gulp.watch(paths.src.scripts, scripts);
+  gulp.watch(`${paths.html.src}**/*.{ejs,json}`, html);
+  gulp.watch(`${paths.styles.src}**/*.scss`, styles);
+  gulp.watch(`${paths.scripts.src}**/*.js`, scripts);
 
-  watcher.on('unlink', (path) => {
-    del(path.replace(paths.src.htmlRoot, baseDir.htdocs).replace('.ejs', '.html'));
-    del(path.replace(paths.src.stylesRoot, paths.htdocs.styles).replace('.scss', '.css'));
-    del(path.replace(paths.src.scriptsRoot, paths.htdocs.scripts));
+  watchDir.on('unlink', (path) => {
+    del(path.replace(paths.html.src, baseDir.dest).replace('.ejs', '.html'));
+    del(path.replace(paths.styles.src, paths.styles.dest).replace('.scss', '.css'));
+    del(path.replace(paths.scripts.src, paths.scripts.dest));
   });
 
-  watcher.on('unlinkDir', (path) => {
-    del(path.replace(paths.src.htmlRoot, baseDir.htdocs));
-    del(path.replace(paths.src.stylesRoot, paths.htdocs.styles));
-    del(path.replace(paths.src.scriptsRoot, paths.htdocs.scripts));
+  watchDir.on('unlinkDir', (path) => {
+    del(path.replace(paths.html.src, baseDir.dest));
+    del(path.replace(paths.styles.src, paths.styles.dest));
+    del(path.replace(paths.scripts.src, paths.scripts.dest));
   });
 
   done();
@@ -176,7 +197,7 @@ function watch(done) {
 export function browsersync(done) {
   browserSync.init({
     server: {
-      baseDir: baseDir.htdocs
+      baseDir: baseDir.dest
     },
     ghostMode: false,
     open: 'external',
