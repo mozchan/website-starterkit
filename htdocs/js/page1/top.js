@@ -81,20 +81,20 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/_scripts/top.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/_scripts/page1/top.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/_scripts/top.js":
-/*!*****************************!*\
-  !*** ./src/_scripts/top.js ***!
-  \*****************************/
+/***/ "./src/_scripts/page1/top.js":
+/*!***********************************!*\
+  !*** ./src/_scripts/page1/top.js ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\n\nvar test = function test() {\n  console.log('test');\n};\n\ntest();\n\n//# sourceURL=webpack:///./src/_scripts/top.js?");
+eval("\n\nvar test = function test() {\n  console.log('test');\n};\n\ntest();\n\n//# sourceURL=webpack:///./src/_scripts/page1/top.js?");
 
 /***/ })
 

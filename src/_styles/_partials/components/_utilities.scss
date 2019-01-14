@@ -1,6 +1,6 @@
 .clearfix {
-  &:after {
-    content: '';
+  &::after {
+    content: "";
     display: block;
     clear: both;
   }
@@ -25,9 +25,9 @@
   }
 }
 @each $name, $value in $breakpoints {
-  @if $name == 'md' or $name == 'lg' {
+  @if $name == "md" or $name == "lg" {
     .u-none-#{$name} {
-      @include media-breakpoint-down($name){
+      @include media-breakpoint-down($name) {
         display: none;
       }
     }

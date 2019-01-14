@@ -1,5 +1,20 @@
-<%_ if (breadcrumbList != 'undefined') { _%>
-  <script type="application/ld+json">
+<nav aria-label="Breadcrumb" class="breadcrumb">
+  <h2>パンくずリスト</h2>
+  <ol>
+    <%_
+    breadcrumbList.forEach((item, i) => {
+      if(breadcrumbList.length === ++i) {
+    _%>
+      <li aria-current="page"><%= pageList[item].title %></li>
+    <%_ } else { _%>
+      <li><a href="<%- pageList[item].url %>"><%= pageList[item].title %></a></li>
+    <%_
+      }
+    });
+    _%>
+  </ol>
+</nav>
+<script type="application/ld+json">
   [{
     "@context": "http://schema.org",
     "@type": "BreadcrumbList",
@@ -16,5 +31,4 @@
       <%_ }); _%>
     ]
   }]
-  </script>
-<%_ } _%>
+</script>
