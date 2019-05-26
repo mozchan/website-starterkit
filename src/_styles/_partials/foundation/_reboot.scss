@@ -5,7 +5,7 @@
 }
 html {
   font-family: sans-serif;
-  line-height: 1.15;
+  line-height: $line-height-base;
   -webkit-text-size-adjust: 100%;
   -ms-overflow-style: scrollbar;
   -webkit-tap-highlight-color: rgba($black, 0);
@@ -29,12 +29,12 @@ section {
 }
 body {
   margin: 0;
+  background-color: $body-bg-base;
+  color: $font-color-base;
   font-family: $font-family-base;
   font-size: $font-size-base;
   font-weight: $font-weight-base;
   line-height: $line-height-base;
-  color: $font-color-base;
-  background-color: $body-bg-base;
 }
 [tabindex="-1"]:focus {
   outline: 0 !important;
@@ -116,8 +116,8 @@ a {
   background-color: transparent;
 
   @include hover {
-    color: $link-hover-color;
-    text-decoration: $link-hover-decoration;
+    color: $link-color-hover;
+    text-decoration: $link-decoration-hover;
   }
 }
 a:not([href]):not([tabindex]) {

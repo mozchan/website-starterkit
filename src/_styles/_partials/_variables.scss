@@ -28,8 +28,9 @@ $cyan: #17a2b8 !default;
 // Links
 $link-color: $blue !default;
 $link-decoration: none !default;
-$link-hover-color: darken($link-color, 15%) !default;
-$link-hover-decoration: underline !default;
+$link-color-hover: darken($link-color, 15%) !default;
+$link-decoration-hover: underline !default;
+$link-color-visited: darken($red, 15%) !default;
 
 // Fonts
 $font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas,

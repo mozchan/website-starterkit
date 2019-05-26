@@ -1,0 +1,58 @@
+input[type="search"] {
+  -webkit-appearance: textfield;
+}
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+button[disabled],
+html input[disabled] {
+  cursor: default;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
+table {
+  border-spacing: 0;
+}
+
+select {
+  appearance: none;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+body {
+  -webkit-font-smoothing: subpixel-antialiased;
+  font-smoothing: subpixel-antialiased;
+  word-wrap: break-word;
+  @include media-breakpoint-down(md) {
+    min-width: 320px;
+  }
+}
+
+a {
+  &:visited {
+    color: $link-color-visited;
+  }
+
+  &[href^="tel:"] {
+    cursor: text;
+    @include media-breakpoint-up(md) {
+      text-decoration: $link-decoration-hover;
+    }
+  }
+}
