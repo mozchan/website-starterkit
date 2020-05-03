@@ -3,6 +3,8 @@
 import gulp from 'gulp';
 import gulpLoadPlugins from 'gulp-load-plugins';
 const $ = gulpLoadPlugins();
+import { create as bsCreate } from 'browser-sync';
+const browserSync = bsCreate();
 import del from 'del';
 import fs from 'fs';
 import autoprefixer from 'autoprefixer';
@@ -177,6 +179,23 @@ function watch(done) {
 }
 
 /*
+ * Browsersync
+ * ローカルサーバーを起動 / ライブリロードは未使用
+ */
+export function browsersync(done) {
+  browserSync.init({
+    server: {
+      baseDir: baseDir.dest
+    },
+    ghostMode: false,
+    open: 'external',
+    notify: false
+  });
+
+  done();
+}
+
+/*
  * Default
  * gulp実行時の処理
  */
@@ -187,3 +206,4 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   exports.default = gulp.series(build, watch);
 }
+export const serve = gulp.series(build, watch, browsersync);
