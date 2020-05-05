@@ -25,10 +25,11 @@ select {
   appearance: none;
 }
 
-html,
-body {
-  height: 100%;
-}
+// html,
+// body {
+//   height: 100%;
+//   smoothLink() で 'document.body.clientHeigh' が正しく取得できないため、コメントアウト
+// }
 
 img {
   max-width: 100%;
